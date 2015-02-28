@@ -181,7 +181,7 @@ module.exports = function(grunt) {
         disposeCollector: false
       }
     });
-	
+
     // Pass-through console.log statements.
     if(options.console) {
       phantomjs.on('console', console.log.bind(console));
@@ -321,6 +321,11 @@ module.exports = function(grunt) {
               // check if a clover report should be generated
               if (coverageOptions.cloverReport) {
                 Report.create('clover', {dir: coverageOptions.cloverReport}).writeReport(collector, true);
+              }
+
+              // check if a clover report should be generated
+              if (coverageOptions.jsonReport) {
+                Report.create('json', {dir: coverageOptions.jsonReport}).writeReport(collector, true);
               }
 
               // delete the instrumented files
