@@ -17,8 +17,18 @@ module.exports = function(grunt) {
   // External lib.
   var phantomjs = require('grunt-lib-phantomjs-istanbul').init(grunt);
   var istanbul = require('istanbul');
-  var instrumenter = new istanbul.Instrumenter();
+  //var istanbulConfig = istanbul.config;
+  //  grunt.log.warn(istanbulConfig);
+  //
+  //  var instrumenterOptions = new istanbul.Configuration();
+  //grunt.log.warn(instrumenterOptions);
+    
+  //var configs = require('istanbul').config.loadObject({'instrumentation': {'include-all-sources': true}});
   var collector = new istanbul.Collector();
+  //var instrumenter = new istanbul.Instrumenter(configs);
+  var coverageVar = '$$cov_' + new Date().getTime() + '$$';
+  var instrumenter = new istanbul.Instrumenter({ coverageVariable: coverageVar});
+    
   var rimraf = require('rimraf');
 
   // Keep track of the last-started module, test and status.
@@ -29,6 +39,9 @@ module.exports = function(grunt) {
   var tempFileCoverage = path.normalize(__dirname + '/../temp/coverage.tmp');
   // Get an asset file, local to the root of the project.
   var asset = path.join.bind(null, __dirname, '..');
+    
+    // array to hold all coverage objects
+    var cov = [];
 
   // Allow an error message to retain its color when split across multiple lines.
   var formatMessage = function(str) {
@@ -96,7 +109,8 @@ module.exports = function(grunt) {
   phantomjs.on('qunit.coverage', function(coverage) {
     if (coverage) {
       // add coverage information to the collector
-      collector.add(coverage);
+      //collector.add(coverage);
+        cov.push(coverage);
     }
   });
 
@@ -132,6 +146,34 @@ module.exports = function(grunt) {
         grunt.log.ok();
       }
     }
+
+      // Add all coverage objects to the collector
+      cov.forEach(function(i){
+          collector.add(cov[i]);
+      });
+      
+      // cov = global[coverageVar];
+      
+      if (true) {
+          // Files that are not touched by code ran by the test runner is manually instrumented, to
+          // illustrate the missing coverage.
+          var transformer = instrumenter.instrumentSync.bind(instrumenter);
+          options.coverage.include.forEach(function (file) {
+              if (!cov[file]) {
+                  transformer(fs.readFileSync(file, 'utf-8'), file);
+
+                  // When instrumenting the code, istanbul will give each FunctionDeclaration a value of 1 in coverState.s,
+                  // presumably to compensate for function hoisting. We need to reset this, as the function was not hoisted,
+                  // as it was never loaded.
+                  Object.keys(instrumenter.coverState.s).forEach(function (key) {
+                      instrumenter.coverState.s[key] = 0;
+                  });
+
+                  cov[file] = instrumenter.coverState;
+              }
+          });
+      }
+      
   });
 
   // Re-broadcast qunit events on grunt.event.
