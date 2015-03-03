@@ -1,61 +1,41 @@
-# grunt-qunit-istanbul
+# grunt-qunit-istanbul-plus v0.4.8 [![Build Status: Linux](https://travis-ci.org/ngrieble/grunt-qunit-istanbul.svg?branch=master)](https://travis-ci.org/ngrieble/grunt-qunit-istanbul)
 
-> Run QUnit unit tests in a headless PhantomJS instance with code coverage
-> analysis provided by istanbul.
+> Run QUnit unit tests in a headless PhantomJS instance and create coverage reports with istanbul. Enable json code coverage
 
-## IMPORTANT
 
-This is a fork of the grunt-contrib-qunit repo, adding the ability to generate
-[istanbul](http://gotwarlost.github.com/istanbul/) test coverage reports.
-Unfortunately this cannot be handled as a seperate plugin, because it needs to
-hook into the grunt-contrib-qunit and grunt-lib-phantomjs structure.
-
-This plugin should work as a drop-in replacement for your current `qunit`
-task. For any further configuration, please check out the
-[original plugin's repo](https://github.com/gruntjs/grunt-contrib-qunit).
 
 ## Getting Started
+This plugin requires Grunt `~0.4.0`
 
-This plugin requires Grunt `~0.4.0`.
-
-If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out
-the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains
-how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile), as well as
-how to install and use Grunt plugins. Once you're familiar with that process,
-you can install this plugin with this command:
+If you haven't used [Grunt](http://gruntjs.com/) before, be sure to check out the [Getting Started](http://gruntjs.com/getting-started) guide, as it explains how to create a [Gruntfile](http://gruntjs.com/sample-gruntfile) as well as install and use Grunt plugins. Once you're familiar with that process, you may install this plugin with this command:
 
 ```shell
-npm install grunt-qunit-istanbul --save-dev
+npm install grunt-qunit-istanbul-plus --save-dev
 ```
 
-Once the plugin has been installed, it can be enabled inside your Gruntfile
-with this line of JavaScript:
+Once the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:
 
 ```js
-grunt.loadNpmTasks('grunt-qunit-istanbul');
+grunt.loadNpmTasks('grunt-qunit-istanbul-plus');
 ```
 
-## QUnit task
 
+
+
+## Qunit task
 _Run this task with the `grunt qunit` command._
 
-Task targets, files and options may be specified according to the grunt
-[Configuring tasks](http://gruntjs.com/configuring-tasks) guide.
+Task targets, files and options may be specified according to the grunt [Configuring tasks](http://gruntjs.com/configuring-tasks) guide.
 
-When installed by npm, this plugin will automatically download and install
-[PhantomJS][] locally via the [grunt-lib-phantomjs-istanbul][] library.
+When installed by npm, this plugin will automatically download and install [PhantomJS][] locally via the [grunt-lib-phantomjs][] library.
 
 [PhantomJS]: http://www.phantomjs.org/
-[grunt-lib-phantomjs-istanbul]: https://github.com/asciidisco/grunt-lib-phantomjs-istanbul
+[grunt-lib-phantomjs]: https://github.com/gruntjs/grunt-lib-phantomjs
 
-Also note that running grunt with the `--debug` flag will output a lot of
-PhantomJS-specific debugging information. This can be very helpful in seeing
-what actual URIs are being requested and received by PhantomJS.
+Also note that running grunt with the `--debug` flag will output a lot of PhantomJS-specific debugging information. This can be very helpful in seeing what actual URIs are being requested and received by PhantomJS.
 
 #### OS Dependencies
-
-This plugin uses PhantomJS to run tests. PhantomJS requires the following
-dependencies:
+This plugin uses PhantomJS to run tests. PhantomJS requires these dependencies
 
 **On Ubuntu/Debian**
 
@@ -65,159 +45,175 @@ dependencies:
 
 `yum install fontconfig freetype`
 
-### Options (Coverage object)
+### Options
 
-#### src
+#### timeout
+Type: `Number`  
+Default: `5000`
 
-* Type: `array`
-* Default: `[]`
+The amount of time (in milliseconds) that grunt will wait for a QUnit `start()` call before failing the task with an error.
 
-The js files you would like to end up in the coverage report.
+#### inject
+Type: `String`  
+Default: (built-in)
 
-#### instrumentedFiles
+Path to an alternate QUnit-PhantomJS bridge file to be injected. See [the built-in bridge](https://github.com/gruntjs/grunt-contrib-qunit/blob/master/phantomjs/bridge.js) for more information.
 
-* Type: `string`
+#### urls
+Type: `Array`  
+Default: `[]`
 
-A temporary folder (that will be automatically generated and deleted after the
-test suite finishes) containing the instrumented source code.
+Absolute `http://` or `https://` urls to be passed to PhantomJS. Specified URLs will be merged with any specified `src` files first. Note that urls must be served by a web server, and since this task doesn't contain a web server, one will need to be configured separately. The [grunt-contrib-connect plugin](https://github.com/gruntjs/grunt-contrib-connect) provides a basic web server.
 
-#### reportOnFail
+#### force
+Type: `boolean`  
+Default: `false`
 
-* Type: `boolean` [optional]
-* Default: `false`
+When true, the whole task will not fail when there are individual test failures, or when no assertions for a test have run. This can be set to true when you always want other tasks in the queue to be executed.
 
-Whether to generate coverage report, when a test fails. 
-By default, on test failure, the coverage report is not generated.
+#### (-- PhantomJS arguments)
+Type: `String`  
+Default: (none)
 
-#### htmlReport
+Additional `--` style arguments that need to be passed in to PhantomJS may be specified as options, like `{'--option': 'value'}`. This may be useful for specifying a cookies file, local storage file, or a proxy. See the [PhantomJS API Reference][] for a list of `--` options that PhantomJS supports.
 
-* Type: `string` [optional]
+### Usage examples
 
-A folder where the HTML reports should be stored.
+#### Wildcards
+In this example, `grunt qunit:all` will test all `.html` files in the test directory _and all subdirectories_. First, the wildcard is expanded to match each individual file. Then, each matched filename is passed to [PhantomJS][] (one at a time).
 
-#### jsonReport
-
-* Type: `string` [optional]
-
-A folder where the JSON reports should be stored.
-
-#### jsonSummaryReport
-
-* Type: `string` [optional]
-
-A folder where the JSON summary reports should be stored.
-
-#### coberturaReport
-
-* Type: `string` [optional]
-
-A folder where the Cobertura reports should be stored.
-
-#### lcovReport
-
-* Type: `string` [optional]
-
-A folder where the LCOV reports should be stored.
-
-#### cloverReport
-
-* Type: `string` [optional]
-
-A folder where the Clover reports should be stored.
-
-#### prefixUrl
-
-* Type: `string` [optional]
-* Default: ``
-
-If you're running your qunit tests with the help of a webserver, and there is
-a path that precedes the file system path of the assets.
-
-Example:
 ```js
-// File system: './javascripts/index.js'
-// Webserver url: 'localhost:8080/assets/my-project/javascripts/index.js'
-
-{
-  baseUrl: '../', // Go up one level to `my-project`
-  prefixUrl: 'assets/' // Prefix used before the file path on the web url
-}
+// Project configuration.
+grunt.initConfig({
+  qunit: {
+    all: ['test/**/*.html']
+  }
+});
 ```
 
+#### Testing via http:// or https://
+In circumstances where running unit tests from local files is inadequate, you can specify `http://` or `https://` URLs via the `urls` option. Each URL is passed to [PhantomJS][] (one at a time).
 
-#### baseUrl
-
-* Type: `string` [optional]
-* Default: `.`
-
-If you're running your qunit tests with the help of a webserver, you have to
-point the coverage inspector to the physical path that is the base url of the
-qunit page you're running.
-
-#### linesThresholdPct
-
-* Type: `number` [optional]
-
-Lines coverage percentage threshold to evaluate when running the build. If the
-actual coverage percentage is less than this value, the build will fail.
-
-#### statementsThresholdPct
-
-* Type: `number` [optional]
-
-Statements coverage percentage threshold to evaluate when running the build. If
-the actual coverage percentage is less than this value, the build will fail.
-
-#### functionsThresholdPct
-
-* Type: `number` [optional]
-
-Functions coverage percentage threshold to evaluate when running the build. If
-the actual coverage percentage is less than this value, the build will fail.
-
-#### branchesThresholdPct
-
-* Type: `number` [optional]
-
-Branches coverage percentage threshold to evaluate when running the build. If
-the actual coverage percentage is less than this value, the build will fail.
-
-#### disposeCollector
-
-* Type: `boolean` [optional]
-* Default: `false`
-
-Whether or not to dispose the previous collector and create a new instance of
-it, discarding the info of previously instrumented files. This is useful if
-using `grunt-qunit-istanbul` as a
-[multi task](http://gruntjs.com/api/inside-tasks#inside-multi-tasks) with
-separate targets generating separate coverage reports. If set to `true` for a
-particular target, the plugin will generate a coverage report only for the
-files specified in the `coverage.src` property, even when files used by the
-current target were also instrumented by a previous target. See the related
-[bug report](https://github.com/asciidisco/grunt-qunit-istanbul/issues/10).
-
-### Usage
+In this example, `grunt qunit` will test two files, served from the server running at `localhost:8000`.
 
 ```js
-qunit: {
-  options: {
-    '--web-security': 'no',
-    coverage: {
-      disposeCollector: true,
-      src: ['src/js/**/*.js'],
-      instrumentedFiles: 'temp/',
-      htmlReport: 'report/coverage',
-      coberturaReport: 'report/',
-      linesThresholdPct: 85
+// Project configuration.
+grunt.initConfig({
+  qunit: {
+    all: {
+      options: {
+        urls: [
+          'http://localhost:8000/test/foo.html',
+          'http://localhost:8000/test/bar.html'
+        ]
+      }
+    }
+  }
+});
+```
+
+Wildcards and URLs may be combined by specifying both.
+
+#### Using the grunt-contrib-connect plugin
+It's important to note that grunt does not automatically start a `localhost` web server. That being said, the [grunt-contrib-connect plugin][] `connect` task can be run before the `qunit` task to serve files via a simple [connect][] web server.
+
+[grunt-contrib-connect plugin]: https://github.com/gruntjs/grunt-contrib-connect
+[connect]: http://www.senchalabs.org/connect/
+
+In the following example, if a web server isn't running at `localhost:8000`, running `grunt qunit` with the following configuration will fail because the `qunit` task won't be able to load the specified URLs. However, running `grunt connect qunit` will first start a static [connect][] web server at `localhost:8000` with its base path set to the Gruntfile's directory. Then, the `qunit` task will be run, requesting the specified URLs.
+
+```js
+// Project configuration.
+grunt.initConfig({
+  qunit: {
+    all: {
+      options: {
+        urls: [
+          'http://localhost:8000/test/foo.html',
+          'http://localhost:8000/test/bar.html',
+        ]
+      }
     }
   },
-  all: ['test/**/*.html']
-}
+  connect: {
+    server: {
+      options: {
+        port: 8000,
+        base: '.'
+      }
+    }
+  }
+});
+
+// This plugin provides the "connect" task.
+grunt.loadNpmTasks('grunt-contrib-connect');
+
+// A convenient task alias.
+grunt.registerTask('test', ['connect', 'qunit']);
 ```
+
+#### Custom timeouts and PhantomJS options
+In the following example, the default timeout value of `5000` is overridden with the value `10000` (timeout values are in milliseconds). Additionally, PhantomJS will read stored cookies from the specified file. See the [PhantomJS API Reference][] for a list of `--` options that PhantomJS supports.
+
+[PhantomJS API Reference]: https://github.com/ariya/phantomjs/wiki/API-Reference
+
+```js
+// Project configuration.
+grunt.initConfig({
+  qunit: {
+    options: {
+      timeout: 10000,
+      '--cookies-file': 'misc/cookies.txt'
+    },
+    all: ['test/**/*.html']
+  }
+});
+```
+
+#### Events and reporting
+[QUnit callback](http://api.qunitjs.com/category/callbacks/) methods and arguments are also emitted through grunt's event system so that you may build custom reporting tools. Please refer to to the QUnit documentation for more information.
+
+The events, with arguments, are as follows:
+
+* `qunit.begin`
+* `qunit.moduleStart` `(name)`
+* `qunit.testStart` `(name)`
+* `qunit.log` `(result, actual, expected, message, source)`
+* `qunit.testDone` `(name, failed, passed, total)`
+* `qunit.moduleDone` `(name, failed, passed, total)`
+* `qunit.done` `(failed, passed, total, runtime)`
+
+In addition to QUnit callback-named events, the following events are emitted by Grunt:
+
+* `qunit.spawn` `(url)`: when [PhantomJS][] is spawned for a test
+* `qunit.fail.load` `(url)`: when [PhantomJS][] could not open the given url
+* `qunit.fail.timeout`: when a QUnit test times out, usually due to a missing `QUnit.start()` call
+* `qunit.error.onError` `(message, stackTrace)`
+
+You may listen for these events like so:
+
+```js
+grunt.event.on('qunit.spawn', function (url) {
+  grunt.log.ok("Running test: " + url);
+});
+```
+
+
+## Release History
+
+ * 2014-12-03   v 0.4.7   moved check for options.console to a place where options object is set. (https://github.com/asciidisco/grunt-qunit-istanbul/commit/925132e570a094aacda97eccec6bbbcf2bf47a00)
+ * 2014-12-02   v 0.4.6   Provide `options.console` in task config (https://github.com/asciidisco/grunt-qunit-istanbul/commit/8ccbbf44284126f0cfaf6da4633334d028b0ce5c) Add prefix url option for server served assets (https://github.com/asciidisco/grunt-qunit-istanbul/commit/b6ec2d1d542c6da9776d807ae86c61e961191301) Added support for reporting the duration of testDone (https://github.com/asciidisco/grunt-qunit-istanbul/commit/52d63edb691ce240dd293207b6b531b1fdbddee7)
+ * 2013-09-29   v0.3.0   Update grunt-lib-phantomjs to v0.4.0. Add qunit.fail.load and qunit.fail.timeout events. Update QUnit to v1.12.0. Add force option. Propagate onError events from phantomjs through the qunit.error.onError event. Remove confusing error message.
+ * 2013-06-06   v0.2.2   Warn if no assertions ran in a single test. Spaces instead of newlines for clickable urls. Wrap bridge.js in a IIFE.
+ * 2013-04-05   v0.2.1   Update to use PhantomJS 1.9.0. Fixes PhantomJS not found errors.
+ * 2013-02-28   v0.2.0   Update to use PhantomJS 1.8.1.
+ * 2013-02-15   v0.1.1   First official release for Grunt 0.4.0.
+ * 2013-01-18   v0.1.1rc6   Updating grunt/gruntplugin dependencies to rc6. Changing in-development grunt/gruntplugin dependency versions from tilde version ranges to specific versions.
+ * 2013-01-09   v0.1.1rc5   Updating to work with grunt v0.4.0rc5. Switching to this.filesSrc api. Adding "urls" option for specifying absolute test URLs.
+ * 2012-10-05   v0.1.0   Work in progress, not yet officially released.
 
 ---
 
-Original Task by ["Cowboy" Ben Alman](http://benalman.com/)
+Task submitted by ["Cowboy" Ben Alman](http://benalman.com/)
 
-Modified by [asciidisco](http://twitter.com/asciidisco)
+*This file was generated on Mon Mar 02 2015 17:39:16.*

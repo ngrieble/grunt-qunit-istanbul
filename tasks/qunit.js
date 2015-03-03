@@ -16,7 +16,7 @@ module.exports = function(grunt) {
 
   // External lib.
   var phantomjs = require('grunt-lib-phantomjs-istanbul').init(grunt);
-  var istanbul = require('istanbul');
+  var istanbul = require('istanbul-json');
   var instrumenter = new istanbul.Instrumenter();
   var collector = new istanbul.Collector();
   var rimraf = require('rimraf');
